@@ -2,10 +2,10 @@ from os.path import isfile
 from sqlite3 import connect
 
 DB_PATH = "./data/db/database.db"  # path of the database(constant)
-BUILD_PATH = "./data/db/build.sql"
+BUILD_PATH = "./data/db/build.sql"  # path of command to build database
 
-cxn = connect(DB_PATH, check_same_thread=False)  # connection to database
-cur = cxn.cursor()  # cursor
+cxn = connect(DB_PATH, check_same_thread=False)  # connection to database, accesses data inside
+cur = cxn.cursor()  # cursor object to retrieve data one row at a time from a result set
 
 
 def with_commit(func):
@@ -16,22 +16,22 @@ def with_commit(func):
     return inner
 
 
-@with_commit
+@with_commit  # means build = with_commit(build)
 def build():
     if isfile(BUILD_PATH):
         scriptexec(BUILD_PATH)
 
 
 def commit():
-    cxn.commit()
+    cxn.commit()  # saves data
 
 
 def close():
-    cxn.close()
+    cxn.close()  # closes connection
 
 
 def field(command, *values):
-    cur.execute(command, tuple(values))
+    cur.execute(command, tuple(values))  # runs an SQL command
 
     if fetch := cur.fetchone() is not None:
         return fetch[0]
@@ -40,13 +40,13 @@ def field(command, *values):
 def record(command, *values):
     cur.execute(command, tuple(values))
 
-    return cur.fetchone()
+    return cur.fetchone()  # retrieves next result of a query result set and returns a tuple
 
 
 def records(command, *values):
     cur.execute(command, tuple(values))
 
-    return cur.fetchall()
+    return cur.fetchall()  # retrieves all results of a query result set and returns a list of tuples
 
 
 def column(command, *values):
@@ -60,7 +60,7 @@ def execute(command, *values):
 
 
 def multiexec(command, valueset):
-    cur.executemany((command, valueset))
+    cur.executemany((command, valueset))  # runs an SQL command many times with different values
 
 
 def scriptexec(path):
