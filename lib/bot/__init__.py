@@ -2,6 +2,8 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from discord import Intents
 from discord.ext.commands import Bot as BotBase, CommandNotFound
 
+from ..db import db
+
 PREFIX = ";"
 OWNER_IDS = [301305436529754113]
 
@@ -11,8 +13,9 @@ class Bot(BotBase):
         self.PREFIX = PREFIX
         self.ready = False
         self.guild = None
-        self.schedule = AsyncIOScheduler()
+        self.scheduler = AsyncIOScheduler()
 
+        db.autosave(self.scheduler)
         super().__init__(command_prefix=PREFIX, owner_ids=OWNER_IDS, intents=Intents.all())
 
     def run(self, version):
@@ -49,6 +52,7 @@ class Bot(BotBase):
     async def on_ready(self):
         if not self.ready:
             self.guild = self.get_guild(803807202032091146)
+            self.scheduler.start()
             self.ready = True
 
             print("Bot Ready!")
