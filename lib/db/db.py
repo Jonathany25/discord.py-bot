@@ -26,7 +26,7 @@ def build():
 
 def commit():
     cxn.commit()  # saves data
-    print("Committed database.")
+    print("Committed database.\n")
 
 
 def autosave(scheduler):
