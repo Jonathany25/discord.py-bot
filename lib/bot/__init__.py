@@ -3,7 +3,7 @@ from glob import glob
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from discord import Intents
-from discord.ext.commands import Bot as BotBase, CommandNotFound
+from discord.ext.commands import Bot as BotBase, CommandNotFound, Context
 
 from ..db import db
 
@@ -55,6 +55,15 @@ class Bot(BotBase):
         print("Running bot...")
         super().run(self.TOKEN, reconnect=True)
 
+    async def process_commands(self, message):
+        ctx = await self.get_context(message, cls=Context)
+
+        if ctx.command is not None and ctx.guild is not None:
+            if self.ready:  # checks if a command is sent before the bot is ready
+                await self.invoke(ctx)
+            else:
+                await ctx.send("I am not ready to receive commands, please try again in a few seconds.")
+
     async def on_connect(self):
         print("Bot Connected!\n")
 
@@ -93,7 +102,8 @@ class Bot(BotBase):
             print("\nBot Reconnected!\n")
 
     async def on_message(self, message):
-        pass
+        if not message.author.bot:
+            await self.process_commands(message)
 
 
 bot = Bot()
