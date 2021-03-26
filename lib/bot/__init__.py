@@ -9,7 +9,7 @@ from ..db import db
 
 PREFIX = ";"
 OWNER_IDS = [301305436529754113]
-COGS = [path.split("\\")[-1][:3] for path in
+COGS = [path.split("\\")[-1][:-3] for path in
         glob("./lib/cogs/*.py")]  # gets all file names that meet the criteria *.py in the specified path
 
 
@@ -88,7 +88,6 @@ class Bot(BotBase):
 
     async def on_ready(self):
         if not self.ready:
-            self.guild = self.get_guild(803807202032091146)
             self.scheduler.start()
 
             while not self.cogs_ready.all_ready():
@@ -102,6 +101,8 @@ class Bot(BotBase):
             print("\nBot Reconnected!\n")
 
     async def on_message(self, message):
+        if self.guild is None:
+            self.guild = self.get_guild(message.guild.id)
         if not message.author.bot:
             await self.process_commands(message)
 
