@@ -2,13 +2,14 @@ from asyncio import sleep
 from glob import glob
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from discord import Intents
-from discord.ext.commands import Bot as BotBase, CommandNotFound, Context
+from discord import Intents, HTTPException, Forbidden
+from discord.ext.commands import Bot as BotBase, CommandNotFound, Context, BadArgument, MissingRequiredArgument
 
 from ..db import db
 
 PREFIX = ";"
 OWNER_IDS = [301305436529754113]
+IGNORE_EXCEPTION = (CommandNotFound, BadArgument)
 COGS = [path.split("\\")[-1][:-3] for path in
         glob("./lib/cogs/*.py")]  # gets all file names that meet the criteria *.py in the specified path
 
@@ -77,11 +78,21 @@ class Bot(BotBase):
             raise
 
     async def on_command_error(self, context, exception):
-        if isinstance(exception, CommandNotFound):  # checks if exception is CommandNotFound error
+        if any([isinstance(exception, error) for error in
+                IGNORE_EXCEPTION]):  # checks if exception is in the ignore list
             pass
 
         elif hasattr(exception, "original"):
             raise exception.original  # raises original exception, it is simpler to read
+
+        elif isinstance(exception, MissingRequiredArgument):
+            await context.send("One or more required arguments are missing.")
+
+        elif isinstance(exception.original, HTTPException):
+            await context.send("Unable to send message.")
+
+        elif isinstance(exception.original, Forbidden):
+            await context.send("I do not have the permission to do that.")
 
         else:
             raise exception
