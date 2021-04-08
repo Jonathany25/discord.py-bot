@@ -9,7 +9,7 @@ from discord.ext.commands import Bot as BotBase, CommandNotFound, Context, BadAr
 from ..db import db
 
 PREFIX = ";"
-OWNER_IDS = [301305436529754113]
+OWNER_IDS = [301305436529754113, 333535679130763264, 401962070675030017]
 IGNORE_EXCEPTION = (CommandNotFound, BadArgument)
 COGS = [path.split("\\")[-1][:-3] for path in
         glob("./lib/cogs/*.py")]  # gets all file names that meet the criteria *.py in the specified path
