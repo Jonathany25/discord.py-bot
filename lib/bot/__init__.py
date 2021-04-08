@@ -3,7 +3,8 @@ from glob import glob
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from discord import Intents, HTTPException, Forbidden
-from discord.ext.commands import Bot as BotBase, CommandNotFound, Context, BadArgument, MissingRequiredArgument
+from discord.ext.commands import Bot as BotBase, CommandNotFound, Context, BadArgument, MissingRequiredArgument, \
+    CommandOnCooldown
 
 from ..db import db
 
@@ -77,22 +78,25 @@ class Bot(BotBase):
 
             raise
 
-    async def on_command_error(self, context, exception):
-        if any([isinstance(exception, error) for error in
+    async def on_command_error(self, ctx, exc):
+        if any([isinstance(exc, error) for error in
                 IGNORE_EXCEPTION]):  # checks if exception is in the ignore list
             pass
 
-        elif hasattr(exception, "original"):
-            raise exception.original  # raises original exception, it is simpler to read
+        elif hasattr(exc, "original"):
+            raise exc.original  # raises original exception, it is simpler to read
 
-        elif isinstance(exception, MissingRequiredArgument):
-            await context.send("One or more required arguments are missing.")
+        elif isinstance(exc, MissingRequiredArgument):
+            await ctx.send("One or more required arguments are missing.")
 
-        elif isinstance(exception.original, HTTPException):
-            await context.send("Unable to send message.")
+        elif isinstance(exc, CommandOnCooldown):
+            await ctx.send(f"Command on cooldown, try again in {exc.retry_after:,.2f} seconds.")
 
-        elif isinstance(exception.original, Forbidden):
-            await context.send("I do not have the permission to do that.")
+        elif isinstance(exc.original, HTTPException):
+            await ctx.send("Unable to send message.")
+
+        elif isinstance(exc.original, Forbidden):
+            await ctx.send("I do not have the permission to do that.")
 
         else:
             raise exception
@@ -114,6 +118,7 @@ class Bot(BotBase):
     async def on_message(self, message):
         if self.guild is None:
             self.guild = self.get_guild(message.guild.id)
+
         if not message.author.bot:
             await self.process_commands(message)
 
