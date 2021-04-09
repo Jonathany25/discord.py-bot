@@ -32,7 +32,7 @@ class Miscellaneous(Cog):
         async with request("GET", URL, headers={}) as response:
             if response.status == 200:
                 data = await response.json()
-                embed = Embed(colour=0x42b9f5, url=data['postLink'])
+                embed = Embed(url=data['postLink'], colour=ctx.author.colour)
                 embed.title = f"r/{data['subreddit']}\n{data['title']}"
                 embed.set_image(url=data['url'])
                 await ctx.send(embed=embed)

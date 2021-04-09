@@ -13,9 +13,9 @@ class Games(Cog):
         if not self.bot.ready:
             self.bot.cogs_ready.ready_up("games")
 
-    @command(name="pick_card", aliases=["choose"])
+    @command(name="gamble", aliases=["choose", "pick"])
     @cooldown(1, 1, BucketType.user)
-    async def pick_card(self, ctx, guess, second_guess, bet="0"):
+    async def pick_card(self, ctx, guess, second_guess, bet):
 
         if bet.isdigit() and guess.isdigit() and second_guess.isdigit():
 
@@ -26,7 +26,7 @@ class Games(Cog):
                     guesses = [guess, second_guess]
                     deck = [[number for number in range(1, 14)] for _ in range(4)]
                     rolls = [str(choice(choice(deck))) for _ in range(4)]
-                    embed = Embed(title="You got:", description=" ".join(rolls))
+                    embed = Embed(title="You got:", description=" ".join(rolls), colour=ctx.author.colour)
 
                     correct_guess = 0
                     for number in rolls:

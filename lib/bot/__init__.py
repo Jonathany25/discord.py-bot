@@ -22,7 +22,7 @@ class Ready(object):
 
     def ready_up(self, cog):
         setattr(self, cog, True)
-        print(f"{cog} Cog Ready!\n")
+        print(f"{cog} Cog Ready!")
 
     def all_ready(self):
         return all([getattr(self, cog) for cog in COGS])
@@ -99,7 +99,7 @@ class Bot(BotBase):
             await ctx.send("I do not have the permission to do that.")
 
         else:
-            raise exception
+            raise exc
 
     async def on_ready(self):
         if not self.ready:
@@ -110,7 +110,7 @@ class Bot(BotBase):
 
             self.ready = True
 
-            print("Bot Ready!\n")
+            print("\nBot Ready!\n")
 
         else:
             print("\nBot Reconnected!\n")
