@@ -1,18 +1,25 @@
+import json
 from asyncio import sleep
 from glob import glob
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from discord import Intents, HTTPException, Forbidden
 from discord.ext.commands import Bot as BotBase, CommandNotFound, Context, BadArgument, MissingRequiredArgument, \
-    CommandOnCooldown
+    CommandOnCooldown, when_mentioned_or
 
 from ..db import db
 
-PREFIX = ";"
 OWNER_IDS = [301305436529754113, 333535679130763264, 401962070675030017]
 IGNORE_EXCEPTION = (CommandNotFound, BadArgument)
 COGS = [path.split("\\")[-1][:-3] for path in
         glob("./lib/cogs/*.py")]  # gets all file names that meet the criteria *.py in the specified path
+
+
+def get_prefix(bot, message):
+    with open("./lib/bot/configs.json", "r") as f:
+        data = json.load(f)
+        prefix = data["PREFIX"]
+    return when_mentioned_or(prefix)(bot, message)
 
 
 class Ready(object):
@@ -30,14 +37,13 @@ class Ready(object):
 
 class Bot(BotBase):
     def __init__(self):
-        self.PREFIX = PREFIX
         self.ready = False
         self.cogs_ready = Ready()
         self.guild = None
         self.scheduler = AsyncIOScheduler()
 
         db.autosave(self.scheduler)
-        super().__init__(command_prefix=PREFIX, owner_ids=OWNER_IDS, intents=Intents.all())
+        super().__init__(command_prefix=get_prefix, owner_ids=OWNER_IDS)
 
     def setup(self):
         for cog in COGS:
@@ -105,6 +111,8 @@ class Bot(BotBase):
         if not self.ready:
             self.scheduler.start()
 
+            self.guild = self.get_guild(824685555169886229)
+
             while not self.cogs_ready.all_ready():
                 await sleep(0.5)
 
@@ -116,9 +124,6 @@ class Bot(BotBase):
             print("\nBot Reconnected!\n")
 
     async def on_message(self, message):
-        if self.guild is None:
-            self.guild = self.get_guild(message.guild.id)
-
         if not message.author.bot:
             await self.process_commands(message)
 

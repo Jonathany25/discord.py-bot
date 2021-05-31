@@ -3,14 +3,14 @@ from discord import Embed, Member
 from discord.ext.commands import Cog, command, BadArgument, BucketType, cooldown
 
 
-class Miscellaneous(Cog):
+class Fun(Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @Cog.listener()
     async def on_ready(self):
         if not self.bot.ready:
-            self.bot.cogs_ready.ready_up("miscellaneous")
+            self.bot.cogs_ready.ready_up("fun")
 
     @command(name="quote", aliases=["inspire"])
     @cooldown(1, 2, BucketType.user)
@@ -51,4 +51,4 @@ class Miscellaneous(Cog):
 
 
 def setup(bot):
-    bot.add_cog(Miscellaneous(bot))
+    bot.add_cog(Fun(bot))
