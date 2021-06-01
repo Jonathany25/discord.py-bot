@@ -4,7 +4,7 @@ from asyncio import sleep
 from glob import glob
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from discord import Intents, HTTPException, Forbidden
+from discord import HTTPException, Forbidden
 from discord.ext.commands import Bot as BotBase, CommandNotFound, Context, BadArgument, MissingRequiredArgument, \
     CommandOnCooldown, when_mentioned_or
 
@@ -48,7 +48,7 @@ class Bot(BotBase):
 
     def setup(self):
         for cog in COGS:
-            self.load_extension(f"lib.cogs.{cog}")  # used to load a cog
+            self.load_extension(f".lib.cogs.{cog}")  # used to load a cog
             print(f"{cog} cog loaded.")
         print("\nSetup Complete!")
 
