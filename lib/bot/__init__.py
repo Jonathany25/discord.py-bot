@@ -1,4 +1,5 @@
 import json
+import os
 from asyncio import sleep
 from glob import glob
 
@@ -57,8 +58,7 @@ class Bot(BotBase):
         print("Running Setup...\n")
         self.setup()
 
-        with open("./lib/bot/token.0", "r", encoding="utf-8") as token_file:
-            self.TOKEN = token_file.read()
+        self.TOKEN = os.environ["TOKEN"]
 
         print("Running bot...")
         super().run(self.TOKEN, reconnect=True)
