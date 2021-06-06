@@ -12,7 +12,7 @@ from ..db import db
 
 OWNER_IDS = [301305436529754113, 333535679130763264, 401962070675030017]
 IGNORE_EXCEPTION = (CommandNotFound, BadArgument)
-COGS = [path.split("\\")[-1][:-3] for path in
+COGS = [path.split("/")[-1][:-3] for path in
         glob("./lib/cogs/*.py")]  # gets all file names that meet the criteria *.py in the specified path
 
 
