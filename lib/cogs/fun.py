@@ -42,7 +42,8 @@ class Fun(Cog):
     @command(name="slap", aliases=["hit"])
     @cooldown(1, 1, BucketType.user)
     async def slap_member(self, ctx, member: Member, *, reason="no reason."):
-        await ctx.send(f"{ctx.author.display_name} slapped {member.mention} for {reason}")
+        await ctx.message.delete()
+        await ctx.send(f"{ctx.author.display_name} slapped {member.mention} for {reason}.")
 
     @slap_member.error
     async def slap_member_error(self, ctx, exc):

@@ -5,9 +5,9 @@ from asyncio import sleep
 from glob import glob
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from discord import HTTPException, Forbidden
+from discord import HTTPException, Forbidden, Intents
 from discord.ext.commands import Bot as BotBase, CommandNotFound, Context, BadArgument, MissingRequiredArgument, \
-    CommandOnCooldown, when_mentioned_or
+    CommandOnCooldown, when_mentioned_or, MissingPermissions, CheckAnyFailure
 
 from ..db import db
 
@@ -39,13 +39,14 @@ class Ready(object):
 
 class Bot(BotBase):
     def __init__(self):
+        self.channels = None
         self.ready = False
         self.cogs_ready = Ready()
         self.guild = None
         self.scheduler = AsyncIOScheduler()
 
         db.autosave(self.scheduler)
-        super().__init__(command_prefix=get_prefix, owner_ids=OWNER_IDS)
+        super().__init__(command_prefix=get_prefix, owner_ids=OWNER_IDS, intents=Intents.all())
 
     def setup(self):
         for cog in COGS:
@@ -86,12 +87,18 @@ class Bot(BotBase):
             raise
 
     async def on_command_error(self, ctx, exc):
-        if any([isinstance(exc, error) for error in
-                IGNORE_EXCEPTION]):  # checks if exception is in the ignore list
+        if any([isinstance(exc, error) for error in IGNORE_EXCEPTION]):  # checks if exception is in the ignore list
             pass
 
         elif hasattr(exc, "original"):
-            raise exc.original  # raises original exception, it is simpler to read
+            if isinstance(exc.original, HTTPException):
+                await ctx.send("Unable to send message.")
+
+            if isinstance(exc.original, Forbidden):
+                await ctx.send("I do not have permission to do that.")
+
+            else:
+                raise exc.original  # raises original exception, it is simpler to read
 
         elif isinstance(exc, MissingRequiredArgument):
             await ctx.send("One or more required arguments are missing.")
@@ -99,18 +106,16 @@ class Bot(BotBase):
         elif isinstance(exc, CommandOnCooldown):
             await ctx.send(f"Command on cooldown, try again in {exc.retry_after:,.2f} seconds.")
 
-        elif isinstance(exc.original, HTTPException):
-            await ctx.send("Unable to send message.")
-
-        elif isinstance(exc.original, Forbidden):
-            await ctx.send("I do not have the permission to do that.")
-
         else:
             raise exc
 
     async def on_ready(self):
         if not self.ready:
             self.scheduler.start()
+
+            with open("./lib/bot/configs.json", "r") as f:
+                data = json.load(f)
+                self.channels = data["channels"]
 
             self.guild = self.get_guild(824685555169886229)
 
